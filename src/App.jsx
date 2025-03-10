@@ -8,6 +8,8 @@ import EventDetailPage from './pages/EventDetailPage';
 import MapPage from './pages/MapPage';
 import { mockEvents } from './utils/mockData';
 import geofenceService from './services/geofenceService';
+import { ThemeProvider } from './context/ThemeContext';
+import ThemeToggle from './components/ui/ThemeToggle';
 
 function App() {
   useEffect(() => {
@@ -21,18 +23,27 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Toaster position="top-right" />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
-          <Route path="events" element={<EventsPage />} />
-          <Route path="events/:id" element={<EventDetailPage />} />
-          <Route path="map" element={<MapPage />} />
-          {/* Add more routes as needed */}
-        </Route>
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            className: 'dark:bg-dark-200 dark:text-gray-100',
+            duration: 3000,
+          }}
+        />
+        <ThemeToggle />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="events" element={<EventsPage />} />
+            <Route path="events/:id" element={<EventDetailPage />} />
+            <Route path="map" element={<MapPage />} />
+            {/* Add more routes as needed */}
+          </Route>
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -28,12 +28,12 @@ const EventCard = ({ event }) => {
   });
 
   return (
-    <Card hover className="h-full flex flex-col">
-      <div className="relative">
+    <Card hover className="h-full flex flex-col hover-card transition-all duration-300">
+      <div className="relative overflow-hidden">
         <img
           src={image || 'https://via.placeholder.com/400x200?text=Event+Image'}
           alt={title}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover transition-transform duration-500 hover:scale-110"
         />
         <div className="absolute top-2 right-2">
           <Badge variant={getCategoryVariant(category)}>{category}</Badge>
@@ -41,24 +41,24 @@ const EventCard = ({ event }) => {
       </div>
       
       <div className="p-4 flex-grow">
-        <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
-        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
+        <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2 dark:text-gray-300">{description}</p>
         
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-gray-600">
-            <CalendarIcon className="h-5 w-5 mr-2 text-primary-500" />
+          <div className="flex items-center text-gray-600 dark:text-gray-300">
+            <CalendarIcon className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" />
             <span>{formattedDate}</span>
           </div>
-          <div className="flex items-center text-gray-600">
-            <ClockIcon className="h-5 w-5 mr-2 text-primary-500" />
+          <div className="flex items-center text-gray-600 dark:text-gray-300">
+            <ClockIcon className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" />
             <span>{time}</span>
           </div>
-          <div className="flex items-center text-gray-600">
-            <MapPinIcon className="h-5 w-5 mr-2 text-primary-500" />
+          <div className="flex items-center text-gray-600 dark:text-gray-300">
+            <MapPinIcon className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" />
             <span>{location}</span>
           </div>
-          <div className="flex items-center text-gray-600">
-            <UserGroupIcon className="h-5 w-5 mr-2 text-primary-500" />
+          <div className="flex items-center text-gray-600 dark:text-gray-300">
+            <UserGroupIcon className="h-5 w-5 mr-2 text-primary-500 dark:text-primary-400" />
             <span>{attendees} attendees</span>
           </div>
         </div>
@@ -66,7 +66,7 @@ const EventCard = ({ event }) => {
       
       <div className="p-4 pt-0 mt-auto">
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500">By {organizer}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">By {organizer}</span>
           <Link to={`/events/${id}`}>
             <Button variant="primary" size="sm">View Details</Button>
           </Link>
@@ -85,6 +85,12 @@ const getCategoryVariant = (category) => {
     'Health': 'success',
     'Sports': 'warning',
     'Other': 'default',
+    'Environment': 'success',
+    'Community': 'primary',
+    'Fundraising': 'secondary',
+    'Animal Welfare': 'success',
+    'Disaster Relief': 'danger',
+    'Arts & Culture': 'info'
   };
   
   return variants[category] || 'default';

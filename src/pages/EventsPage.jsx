@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import EventList from '../components/events/EventList';
 import EventFilters from '../components/events/EventFilters';
 import { mockEvents, eventCategories } from '../utils/mockData';
+import { useTheme } from '../context/ThemeContext';
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -13,6 +14,7 @@ const EventsPage = () => {
     location: '',
     sortBy: 'date',
   });
+  const { darkMode } = useTheme();
 
   useEffect(() => {
     // Simulate API call
@@ -38,7 +40,8 @@ const EventsPage = () => {
           event.title.toLowerCase().includes(searchTerm) ||
           event.description.toLowerCase().includes(searchTerm) ||
           event.location.toLowerCase().includes(searchTerm) ||
-          event.organizer.toLowerCase().includes(searchTerm)
+          event.organizer.toLowerCase().includes(searchTerm) ||
+          event.category.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -101,7 +104,7 @@ const EventsPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors duration-300">
       <div className="md:flex md:gap-8">
         <div className="md:w-1/4 mb-6 md:mb-0">
           <EventFilters
@@ -109,24 +112,31 @@ const EventsPage = () => {
             setFilters={setFilters}
             categories={eventCategories}
             onApplyFilters={handleApplyFilters}
+            className="animate-fade-in"
           />
         </div>
         <div className="md:w-3/4">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Events</h1>
-            <p className="text-gray-600">
+          <div className="mb-6 animate-fade-in">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2 dark:text-white">Events</h1>
+            <p className="text-gray-600 dark:text-gray-300">
               Discover and join events organized by NGOs and community groups.
             </p>
           </div>
           
           {loading ? (
-            <EventList loading={true} />
+            <div className="animate-pulse space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-gray-200 dark:bg-dark-300 p-4 rounded-lg h-32"></div>
+              ))}
+            </div>
           ) : (
             <>
-              <div className="mb-4 text-gray-600">
+              <div className="mb-4 text-gray-600 dark:text-gray-300 animate-fade-in">
                 {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'} found
               </div>
-              <EventList events={filteredEvents} />
+              <div className="space-y-4 animate-fade-in">
+                <EventList events={filteredEvents} />
+              </div>
             </>
           )}
         </div>

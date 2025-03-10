@@ -11,14 +11,10 @@ import {
   ArrowLeftIcon,
   ShareIcon
 } from '@heroicons/react/24/outline';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import EventMap from '../components/events/EventMap';
 import { mockEvents } from '../utils/mockData';
-import MAP_CONFIG from '../config/mapConfig';
-import 'leaflet/dist/leaflet.css';
 
 const EventDetailPage = () => {
   const { id } = useParams();
@@ -26,6 +22,7 @@ const EventDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [registered, setRegistered] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
   
   useEffect(() => {
     // Simulate API call
@@ -35,7 +32,7 @@ const EventDetailPage = () => {
         const foundEvent = mockEvents.find(e => e.id === parseInt(id));
         setEvent(foundEvent || null);
         setLoading(false);
-      }, 500);
+      }, 800);
     };
     
     fetchEvent();
@@ -56,12 +53,128 @@ const EventDetailPage = () => {
     }
   }, [id]);
   
+  // Initialize map after event is loaded
+  useEffect(() => {
+    if (!loading && event && !mapInitialized && typeof window.L !== 'undefined') {
+      initializeMap();
+    }
+  }, [loading, event, mapInitialized]);
+  
+  const initializeMap = () => {
+    // Check if Leaflet is available
+    if (!window.L || !event.latitude || !event.longitude) {
+      return;
+    }
+    
+    // Create map instance
+    const map = window.L.map('event-map').setView([event.latitude, event.longitude], 14);
+    
+    // Add tile layer
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Add marker for event
+    window.L.marker([event.latitude, event.longitude])
+      .addTo(map)
+      .bindPopup(`
+        <div>
+          <h5 class="font-medium">${event.title}</h5>
+          <p class="text-sm">${event.location}</p>
+        </div>
+      `)
+      .openPopup();
+    
+    // If user location is available, add a marker and show distance
+    if (userLocation) {
+      window.L.marker([userLocation.latitude, userLocation.longitude], {
+        icon: window.L.divIcon({
+          className: 'user-location-marker',
+          html: '<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>'
+        })
+      }).addTo(map)
+      .bindPopup('Your location')
+      .openPopup();
+      
+      // Draw a line between user and event
+      window.L.polyline([
+        [userLocation.latitude, userLocation.longitude],
+        [event.latitude, event.longitude]
+      ], {
+        color: '#3B82F6',
+        dashArray: '5, 10',
+        weight: 2
+      }).addTo(map);
+      
+      // Fit bounds to include both markers
+      map.fitBounds([
+        [userLocation.latitude, userLocation.longitude],
+        [event.latitude, event.longitude]
+      ], { padding: [50, 50] });
+    }
+    
+    setMapInitialized(true);
+  };
+  
   const handleRegister = () => {
     // Simulate registration
-    setTimeout(() => {
-      setRegistered(true);
-      // In a real app, we would make an API call here
-    }, 500);
+    setRegistered(true);
+  };
+  
+  // Format date
+  const formatDate = (dateString) => {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  // Format time
+  const formatTime = (timeString) => {
+    return timeString;
+  };
+  
+  // Calculate distance from user
+  const calculateDistance = () => {
+    if (!userLocation || !event || !event.latitude || !event.longitude) {
+      return null;
+    }
+    
+    // Simple distance calculation (not accounting for Earth's curvature)
+    const lat1 = userLocation.latitude;
+    const lon1 = userLocation.longitude;
+    const lat2 = event.latitude;
+    const lon2 = event.longitude;
+    
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    const distance = R * c; // Distance in km
+    
+    return distance.toFixed(1);
+  };
+  
+  const deg2rad = (deg) => {
+    return deg * (Math.PI/180);
+  };
+  
+  // Get category variant for badge
+  const getCategoryVariant = (category) => {
+    const categoryMap = {
+      'Environment': 'success',
+      'Education': 'info',
+      'Health': 'warning',
+      'Community': 'primary',
+      'Fundraising': 'secondary',
+      'Animal Welfare': 'success',
+      'Disaster Relief': 'danger',
+      'Arts & Culture': 'info'
+    };
+    
+    return categoryMap[category] || 'primary';
   };
   
   if (loading) {
@@ -69,22 +182,20 @@ const EventDetailPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-60 bg-gray-200 rounded-lg mb-6"></div>
-          <div className="md:flex md:gap-8">
-            <div className="md:w-2/3">
-              <div className="h-10 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-6"></div>
-              
-              <div className="h-6 bg-gray-200 rounded w-1/4 mb-3"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6 mb-6"></div>
+          <div className="h-64 bg-gray-200 rounded mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
             </div>
-            <div className="md:w-1/3 mt-6 md:mt-0">
-              <div className="h-40 bg-gray-200 rounded-lg mb-4"></div>
-              <div className="h-10 bg-gray-200 rounded mb-4"></div>
+            <div>
+              <div className="h-48 bg-gray-200 rounded mb-4"></div>
+              <div className="h-10 bg-gray-200 rounded mb-2"></div>
             </div>
           </div>
         </div>
@@ -96,7 +207,7 @@ const EventDetailPage = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Event Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Event Not Found</h2>
           <p className="text-gray-600 mb-6">The event you're looking for doesn't exist or has been removed.</p>
           <Link to="/events">
             <Button variant="primary">Browse All Events</Button>
@@ -106,221 +217,226 @@ const EventDetailPage = () => {
     );
   }
   
-  // Format date
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-  
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Back button */}
       <div className="mb-6">
         <Link to="/events" className="inline-flex items-center text-primary-600 hover:text-primary-800">
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
+          <ArrowLeftIcon className="h-5 w-5 mr-1" />
           Back to Events
         </Link>
       </div>
       
-      <div className="relative mb-8">
-        <img 
-          src={event.image || 'https://via.placeholder.com/1200x400?text=Event+Image'} 
-          alt={event.title}
-          className="w-full h-64 md:h-96 object-cover rounded-lg"
-        />
-        <div className="absolute top-4 right-4">
-          <Badge variant={getCategoryVariant(event.category)}>{event.category}</Badge>
-        </div>
-      </div>
-      
-      <div className="md:flex md:gap-8">
-        <div className="md:w-2/3 mb-8 md:mb-0">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{event.title}</h1>
-          
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="flex items-center text-gray-600">
-              <CalendarIcon className="h-5 w-5 mr-2 text-primary-500" />
-              <span>{formattedDate}</span>
-            </div>
-            <div className="flex items-center text-gray-600">
-              <ClockIcon className="h-5 w-5 mr-2 text-primary-500" />
-              <span>{event.time}</span>
-            </div>
-            <div className="flex items-center text-gray-600">
-              <MapPinIcon className="h-5 w-5 mr-2 text-primary-500" />
-              <span>{event.location}</span>
-            </div>
-            <div className="flex items-center text-gray-600">
-              <UserGroupIcon className="h-5 w-5 mr-2 text-primary-500" />
-              <span>{event.attendees} attendees</span>
-            </div>
-          </div>
-          
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">About This Event</h2>
-            <p className="text-gray-600 whitespace-pre-line">{event.description}</p>
-          </div>
-          
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">Location</h2>
-            {event.latitude && event.longitude ? (
-              <div className="h-[500px] rounded-lg overflow-hidden">
-                <MapContainer 
-                  center={[event.latitude, event.longitude]} 
-                  zoom={14} 
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    url={MAP_CONFIG.TILE_LAYER}
-                    attribution={MAP_CONFIG.ATTRIBUTION}
-                  />
-                  <Marker position={[event.latitude, event.longitude]}>
-                    <Popup>
-                      <div>
-                        <h5 className="font-medium">{event.title}</h5>
-                        <p className="text-sm">{event.location}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                  {userLocation && (
-                    <Marker position={[userLocation.latitude, userLocation.longitude]}>
-                      <Popup>Your Location</Popup>
-                    </Marker>
-                  )}
-                </MapContainer>
-              </div>
-            ) : (
-              <EventMap 
-                events={[event]} 
-                selectedEvent={event}
-              />
-            )}
-          </div>
-          
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">Organizer</h2>
-            <Card className="p-4">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 mr-4">
-                  <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-                    <UserIcon className="h-8 w-8 text-primary-600" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">{event.organizer}</h3>
-                  <div className="mt-1 space-y-1">
-                    {event.contactEmail && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <EnvelopeIcon className="h-4 w-4 mr-1" />
-                        <a href={`mailto:${event.contactEmail}`} className="hover:text-primary-600">
-                          {event.contactEmail}
-                        </a>
-                      </div>
-                    )}
-                    {event.contactPhone && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <PhoneIcon className="h-4 w-4 mr-1" />
-                        <a href={`tel:${event.contactPhone}`} className="hover:text-primary-600">
-                          {event.contactPhone}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Card>
+      {/* Event header */}
+      <div className="mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <h1 className="text-3xl font-bold text-gray-900">{event.title}</h1>
+          <div className="flex items-center space-x-2">
+            <Badge variant={getCategoryVariant(event.category)}>
+              {event.category}
+            </Badge>
+            <button className="p-2 rounded-full hover:bg-gray-100">
+              <ShareIcon className="h-5 w-5 text-gray-600" />
+            </button>
           </div>
         </div>
         
-        <div className="md:w-1/3">
-          <Card className="sticky top-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-gray-600">
+          <div className="flex items-center">
+            <CalendarIcon className="h-5 w-5 mr-2 text-primary-500" />
+            <span>{formatDate(event.date)}</span>
+          </div>
+          <div className="flex items-center">
+            <ClockIcon className="h-5 w-5 mr-2 text-primary-500" />
+            <span>{formatTime(event.time)}</span>
+          </div>
+          <div className="flex items-center">
+            <MapPinIcon className="h-5 w-5 mr-2 text-primary-500" />
+            <span>{event.location}</span>
+          </div>
+          <div className="flex items-center">
+            <UserGroupIcon className="h-5 w-5 mr-2 text-primary-500" />
+            <span>{event.participants} participants</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main content */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Left column - Event details */}
+        <div className="md:col-span-2 space-y-6">
+          {/* Event image */}
+          <img 
+            src={event.image || "https://images.unsplash.com/photo-1546552356-3fae876a61ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"} 
+            alt={event.title}
+            className="w-full h-64 object-cover rounded-lg shadow-md"
+          />
+          
+          {/* Description */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">About This Event</h2>
+            <div className="prose max-w-none text-gray-600">
+              <p>{event.description}</p>
+            </div>
+          </div>
+          
+          {/* Activities */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">Activities</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              {event.activities ? (
+                event.activities.map((activity, index) => (
+                  <li key={index}>{activity}</li>
+                ))
+              ) : (
+                <>
+                  <li>Community engagement and team building</li>
+                  <li>Hands-on activities related to {event.category}</li>
+                  <li>Networking with like-minded individuals</li>
+                  <li>Learning new skills and making a difference</li>
+                </>
+              )}
+            </ul>
+          </div>
+          
+          {/* Requirements */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">What to Bring</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              {event.requirements ? (
+                event.requirements.map((req, index) => (
+                  <li key={index}>{req}</li>
+                ))
+              ) : (
+                <>
+                  <li>Comfortable clothing appropriate for the activity</li>
+                  <li>Water bottle and sun protection</li>
+                  <li>Positive attitude and willingness to participate</li>
+                </>
+              )}
+            </ul>
+          </div>
+        </div>
+        
+        {/* Right column - Registration and map */}
+        <div className="space-y-6">
+          {/* Registration card */}
+          <Card>
             <div className="p-6">
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Event Details</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <CalendarIcon className="h-5 w-5 mr-3 text-primary-500" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">Date</div>
-                      <div className="text-sm text-gray-600">{formattedDate}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <ClockIcon className="h-5 w-5 mr-3 text-primary-500" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">Time</div>
-                      <div className="text-sm text-gray-600">{event.time}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <MapPinIcon className="h-5 w-5 mr-3 text-primary-500" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">Location</div>
-                      <div className="text-sm text-gray-600">{event.location}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-medium text-gray-900">Reward Points</div>
-                  <div className="text-sm font-bold text-primary-600">{event.points} points</div>
-                </div>
-                <p className="text-xs text-gray-600">
-                  Earn points by attending this event. Points can be redeemed for rewards.
-                </p>
-              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Registration</h2>
               
               {registered ? (
                 <div className="text-center">
-                  <div className="bg-green-50 text-green-800 rounded-md p-3 mb-4">
-                    You're registered for this event!
+                  <div className="bg-green-100 text-green-800 p-4 rounded-lg mb-4">
+                    <p className="font-medium">You're registered for this event!</p>
+                    <p className="text-sm mt-1">Check your email for confirmation details.</p>
                   </div>
-                  <Button variant="outline" className="w-full mb-3">
+                  <Button variant="outline" fullWidth>
                     Add to Calendar
-                  </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center">
-                    <ShareIcon className="h-4 w-4 mr-2" />
-                    Share Event
                   </Button>
                 </div>
               ) : (
-                <div>
+                <>
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Registration Fee</span>
+                      <span className="font-medium">{event.fee ? `$${event.fee}` : 'Free'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Date</span>
+                      <span className="font-medium">{event.date}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Time</span>
+                      <span className="font-medium">{event.time}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Spots Available</span>
+                      <span className="font-medium">{event.spotsAvailable || 'Unlimited'}</span>
+                    </div>
+                  </div>
+                  
                   <Button 
                     variant="primary" 
-                    className="w-full mb-3"
+                    fullWidth
                     onClick={handleRegister}
                   >
-                    Register for Event
+                    Register Now
                   </Button>
-                  <Button variant="outline" className="w-full flex items-center justify-center">
-                    <ShareIcon className="h-4 w-4 mr-2" />
-                    Share Event
-                  </Button>
+                </>
+              )}
+            </div>
+          </Card>
+          
+          {/* Location card */}
+          <Card>
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Location</h2>
+              
+              {event.latitude && event.longitude ? (
+                <>
+                  <div className="h-48 bg-gray-100 rounded-lg mb-4 overflow-hidden">
+                    <div id="event-map" className="h-full w-full"></div>
+                  </div>
+                  <p className="text-gray-600 mb-2">{event.location}</p>
+                  
+                  {calculateDistance() && (
+                    <p className="text-sm text-gray-500">
+                      {calculateDistance()} km from your location
+                    </p>
+                  )}
+                  
+                  <div className="mt-4">
+                    <a 
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${event.latitude},${event.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                    >
+                      Get Directions
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center p-6 bg-gray-100 rounded-lg">
+                  <MapPinIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600">Location details unavailable</p>
                 </div>
               )}
+            </div>
+          </Card>
+          
+          {/* Organizer card */}
+          <Card>
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Organizer</h2>
+              
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                  <UserIcon className="h-6 w-6 text-gray-500" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900">{event.organizer || 'NGO Events Team'}</h3>
+                  <p className="text-sm text-gray-600">Event Organizer</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center text-sm">
+                  <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <span className="text-gray-600">contact@ngoevents.org</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <PhoneIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <span className="text-gray-600">+1 (555) 123-4567</span>
+                </div>
+              </div>
             </div>
           </Card>
         </div>
       </div>
     </div>
   );
-};
-
-// Helper function to determine badge variant based on category
-const getCategoryVariant = (category) => {
-  const variants = {
-    'Cleaning Drive': 'primary',
-    'Awareness': 'info',
-    'Education': 'secondary',
-    'Health': 'success',
-    'Sports': 'warning',
-    'Other': 'default',
-  };
-  
-  return variants[category] || 'default';
 };
 
 export default EventDetailPage; 

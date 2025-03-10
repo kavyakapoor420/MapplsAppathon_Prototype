@@ -7,9 +7,9 @@ const Card = ({
   hover = false,
   ...props 
 }) => {
-  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden';
+  const baseClasses = 'bg-white rounded-lg shadow-md overflow-hidden dark:bg-dark-200 dark:border dark:border-dark-100 transition-all duration-300';
   const paddingClasses = padding ? 'p-6' : '';
-  const hoverClasses = hover ? 'transition-transform duration-300 hover:shadow-lg hover:-translate-y-1' : '';
+  const hoverClasses = hover ? 'hover:shadow-lg hover:-translate-y-1 dark:hover:shadow-xl dark:hover:shadow-dark-400/10' : '';
   
   const cardClasses = `${baseClasses} ${paddingClasses} ${hoverClasses} ${className}`;
   
