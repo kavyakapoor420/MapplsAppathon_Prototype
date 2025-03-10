@@ -11,6 +11,9 @@ import geofenceService from './services/geofenceService';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ui/ThemeToggle';
 
+import TrafficCongestion from './pages/TrafficRouteManagement';
+import ImpactTrackingScreen from './Impact';
+
 function App() {
   useEffect(() => {
     // Initialize geofencing with mock events
@@ -39,6 +42,7 @@ function App() {
             <Route path="events" element={<EventsPage />} />
             <Route path="events/:id" element={<EventDetailPage />} />
             <Route path="map" element={<MapPage />} />
+            <Route path='/TrafficCongestion' element={<TrafficCongestion/>}/>
             {/* Add more routes as needed */}
           </Route>
         </Routes>
@@ -48,3 +52,120 @@ function App() {
 }
 
 export default App;
+
+
+
+// src/App.jsx
+// import React, { useEffect, useState } from 'react';
+// import { Canvas } from '@react-three/fiber';
+// import { ARButton, XR, useHitTest } from '@react-three/xr';
+// import axios from 'axios';
+
+// const MAPPLS_API_KEY = '18daea6d89db814ff7c19493a8a9509c'; // Replace with your Mappls API Key
+
+// const App = () => {
+//   const [userLocation, setUserLocation] = useState(null);
+//   const [events, setEvents] = useState([]);
+//   const [map, setMap] = useState(null);
+
+//   useEffect(() => {
+//     // Initialize Mappls Map
+//     const initializeMap = () => {
+//       const mapInstance = new window.Mappls.Map('map', {
+//         center: [77.209, 28.6139], // Default to New Delhi
+//         zoom: 14,
+//       });
+//       setMap(mapInstance);
+//     };
+
+//     // Fetch User Location
+//     const fetchUserLocation = () => {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const { latitude, longitude } = position.coords;
+//           setUserLocation({ latitude, longitude });
+//           map.setView([latitude, longitude], 14);
+//           fetchNearbyEvents(latitude, longitude);
+//         },
+//         (error) => console.error('Error fetching user location:', error),
+//         { enableHighAccuracy: true }
+//       );
+//     };
+
+//     // Fetch Nearby Events
+//     const fetchNearbyEvents = async (latitude, longitude) => {
+//       const url = `https://apis.mappls.com/advancedmaps/v1/${MAPPLS_API_KEY}/nearby_search`;
+//       const params = {
+//         keywords: 'events',
+//         refLocation: `${latitude},${longitude}`,
+//         radius: 5000, // in meters
+//       };
+
+//       try {
+//         const response = await axios.get(url, { params });
+//         setEvents(response.data.results);
+//         addEventMarkers(response.data.results);
+//       } catch (error) {
+//         console.error('Error fetching nearby events:', error);
+//       }
+//     };
+
+//     // Add Event Markers to Map
+//     const addEventMarkers = (events) => {
+//       events.forEach((event) => {
+//         const marker = new window.Mappls.Marker({
+//           position: [event.latitude, event.longitude],
+//         }).addTo(map);
+//         marker.bindPopup(`<b>${event.poi}</b><br>${event.address}`);
+//       });
+//     };
+
+//     if (!map) {
+//       initializeMap();
+//     }
+
+//     if (map && !userLocation) {
+//       fetchUserLocation();
+//     }
+//   }, [map, userLocation]);
+
+//   return (
+//     <div className="h-screen w-full flex flex-col">
+//       <div id="map" className="w-full h-1/2"></div>
+//       <div className="w-full h-1/2 flex flex-col items-center justify-center bg-gray-900 text-white">
+//         <h1 className="text-2xl font-bold mb-4">AR Navigation with Events</h1>
+//         {userLocation ? (
+//           <>
+//             <p>Your Location: {userLocation.latitude}, {userLocation.longitude}</p>
+//             <ARButton />
+//             <Canvas style={{ height: '70vh', width: '100%' }}>
+//               <XR>
+//                 <ambientLight />
+//                 <pointLight position={[10, 10, 10]} />
+//                 <HitTestExample />
+//               </XR>
+//             </Canvas>
+//           </>
+//         ) : (
+//           <p>Loading location...</p>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// const HitTestExample = () => {
+//   const ref = React.useRef();
+//   useHitTest((hit) => {
+//     hit.decompose(ref.current.position, ref.current.rotation, ref.current.scale);
+//   });
+
+//   return (
+//     <mesh ref={ref}>
+//       <boxBufferGeometry args={[0.1, 0.1, 0.1]} />
+//       <meshStandardMaterial color="orange" />
+//     </mesh>
+//   );
+// };
+
+// export default App;

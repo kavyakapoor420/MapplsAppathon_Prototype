@@ -11,12 +11,18 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@react-three/fiber": "^9.1.0",
+    "@react-three/xr": "^6.6.9",
+    "axios": "^1.8.2",
     "leaflet": "^1.9.4",
+    "mappls-web-maps": "^3.5.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-leaflet": "^5.0.0",
-    "react-router-dom": "^7.3.0"
+    "react-router-dom": "^7.3.0",
+    "recharts": "^2.15.1",
+    "three": "^0.174.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

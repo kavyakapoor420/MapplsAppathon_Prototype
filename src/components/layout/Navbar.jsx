@@ -59,6 +59,15 @@ const Navbar = () => {
               >
                 Map
               </Link>
+              <Link 
+                to="/traffic-route-management" 
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300
+                          ${location.pathname === '/map' 
+                            ? 'border-primary-500 text-gray-900 dark:text-white dark:border-primary-400' 
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-300 dark:hover:text-white dark:hover:border-gray-500'}`}
+              >
+                Traffic Route Management
+              </Link>
               {isLoggedIn && (
                 <Link 
                   to="/dashboard" 

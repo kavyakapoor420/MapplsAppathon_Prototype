@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPinIcon, CalendarIcon } from '@heroicons/react/24/outline';
@@ -9,9 +11,7 @@ import { mockEvents } from '../utils/mockData';
 const MapPage = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [mapInitialized, setMapInitialized] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -25,83 +25,7 @@ const MapPage = () => {
     };
     
     fetchEvents();
-    
-    // Get user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-        }
-      );
-    }
   }, []);
-  
-  // Initialize map after events are loaded
-  useEffect(() => {
-    if (!loading && !mapInitialized && typeof window.L !== 'undefined') {
-      initializeMap();
-    }
-  }, [loading, mapInitialized]);
-  
-  const initializeMap = () => {
-    // Check if Leaflet is available
-    if (!window.L) {
-      console.error("Leaflet is not available");
-      return;
-    }
-    
-    // Create map instance
-    const map = window.L.map('map-container').setView([20.5937, 78.9629], 5);
-    
-    // Add tile layer
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-    
-    // Add markers for events
-    events.forEach(event => {
-      if (event.latitude && event.longitude) {
-        const marker = window.L.marker([event.latitude, event.longitude])
-          .addTo(map)
-          .bindPopup(`
-            <div>
-              <h5 class="font-medium">${event.title}</h5>
-              <p class="text-sm">${event.location}</p>
-              <a href="/events/${event.id}" class="text-primary-600">View Details</a>
-            </div>
-          `);
-          
-        marker.on('click', () => {
-          setSelectedEvent(event);
-        });
-      }
-    });
-    
-    // If user location is available, add a marker and center map
-    if (userLocation) {
-      window.L.marker([userLocation.latitude, userLocation.longitude], {
-        icon: window.L.divIcon({
-          className: 'user-location-marker',
-          html: '<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>'
-        })
-      }).addTo(map);
-      
-      map.setView([userLocation.latitude, userLocation.longitude], 10);
-    }
-    
-    // If there's a selected event, open its popup
-    if (selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
-      map.setView([selectedEvent.latitude, selectedEvent.longitude], 14);
-    }
-    
-    setMapInitialized(true);
-  };
   
   const handleEventClick = (event) => {
     setSelectedEvent(event);
@@ -125,6 +49,15 @@ const MapPage = () => {
     };
     
     return categoryMap[category] || 'primary';
+  };
+
+  // Generate the Mappls iframe URL dynamically based on the selected event
+  const getMapplsIframeUrl = () => {
+    if (selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
+      return `https://embed.mappls.com/immersive/5ce166?placeDetails=true&castShadow=false&rotate=true&lat=${selectedEvent.latitude}&lng=${selectedEvent.longitude}`;
+    }
+    // Default location (Chennai) if no event is selected
+    return `https://embed.mappls.com/immersive/5ce166?placeDetails=true&castShadow=false&rotate=true&lat=13.0827&lng=80.2707`;
   };
   
   return (
@@ -223,7 +156,12 @@ const MapPage = () => {
               </div>
             </div>
           ) : (
-            <div id="map-container" className="absolute inset-0"></div>
+            <iframe 
+              src={getMapplsIframeUrl()} 
+              style={{ width: '100%', height: '100%' }} 
+              title="Mappls 3D Metaverse Maps" 
+              allowFullScreen
+            ></iframe>
           )}
         </div>
       </div>
@@ -231,4 +169,4 @@ const MapPage = () => {
   );
 };
 
-export default MapPage; 
+export default MapPage;
