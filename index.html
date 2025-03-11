@@ -9,7 +9,14 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://apis.mappls.com/advancedmaps/api/18daea6d89db814ff7c19493a8a9509c/map_sdk?v=3.0"></script>
+    <script>
+      window.mapplsInitialize = function() {
+        console.log('Mappls SDK loaded and ready');
+        // The React app will use this callback
+        window.mapplsInitializeComplete = true;
+      };
+    </script>
+    <script src="https://apis.mappls.com/advancedmaps/api/18daea6d89db814ff7c19493a8a9509c/map_sdk?v=3.0&layer=vector&callback=mapplsInitialize"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

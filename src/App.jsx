@@ -6,14 +6,21 @@ import HomePage from './pages/HomePage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import MapPage from './pages/MapPage';
+import MapDemoPage from './pages/MapDemoPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+import FoodDonationPage from './pages/FoodDonationPage';
 import { mockEvents } from './utils/mockData';
 import geofenceService from './services/geofenceService';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import ThemeToggle from './components/ui/ThemeToggle';
 
 import TrafficCongestion from './pages/TrafficRouteManagement';
 import ImpactTrackingScreen from './Impact';
-import Chatbot from './components/Chatbot';
+// import Chatbot from './components/Chatbot';
 
 function App() {
   useEffect(() => {
@@ -28,27 +35,45 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Chatbot/>
-      <Router>
-        <Toaster 
-          position="top-right" 
-          toastOptions={{
-            className: 'dark:bg-dark-200 dark:text-gray-100',
-            duration: 3000,
-          }}
-        />
-        <ThemeToggle />
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="events" element={<EventsPage />} />
-            <Route path="events/:id" element={<EventDetailPage />} />
-            <Route path="map" element={<MapPage />} />
-            <Route path='/TrafficCongestion' element={<TrafficCongestion/>}/>
-            {/* Add more routes as needed */}
-          </Route>
-        </Routes>
-      </Router>
+      <AuthProvider>
+        {/* <Chatbot/> */}
+        <Router>
+          <Toaster 
+            position="top-right" 
+            toastOptions={{
+              className: 'dark:bg-dark-200 dark:text-gray-100',
+              duration: 3000,
+            }}
+          />
+          <ThemeToggle />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Routes with layout */}
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="events" element={<EventsPage />} />
+              <Route path="events/:id" element={<EventDetailPage />} />
+              <Route path="map" element={<MapPage />} />
+              <Route path="map-demo" element={<MapDemoPage />} />
+              <Route path="food-donation" element={<FoodDonationPage />} />
+              <Route path='/TrafficCongestion' element={<TrafficCongestion/>}/>
+              
+              {/* Protected routes */}
+              <Route 
+                path="profile" 
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                } 
+              />
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -213,9 +213,14 @@ const HomePage = () => {
                   </div>
                 )}
                 <div className="mt-4 text-center">
-                  <Link to="/map">
-                    <Button variant="primary">View Full Map</Button>
-                  </Link>
+                  <div className="flex flex-col sm:flex-row justify-center gap-3">
+                    <Link to="/map">
+                      <Button variant="primary">View Full Map</Button>
+                    </Link>
+                    <Link to="/map-demo">
+                      <Button variant="secondary">Try Mappls Demo</Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

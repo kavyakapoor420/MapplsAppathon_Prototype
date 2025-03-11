@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPinIcon, CalendarIcon } from '@heroicons/react/24/outline';
@@ -7,6 +5,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { mockEvents } from '../utils/mockData';
+import MapComponent from '../components/MapComponent';
 
 const MapPage = () => {
   const [events, setEvents] = useState([]);
@@ -45,21 +44,16 @@ const MapPage = () => {
       'Fundraising': 'secondary',
       'Animal Welfare': 'success',
       'Disaster Relief': 'danger',
-      'Arts & Culture': 'info'
+      'Arts & Culture': 'info',
+      'Cleaning Drive': 'success',
+      'Awareness': 'info',
+      'Sports': 'warning',
+      'Other': 'primary'
     };
     
     return categoryMap[category] || 'primary';
   };
 
-  // Generate the Mappls iframe URL dynamically based on the selected event
-  const getMapplsIframeUrl = () => {
-    if (selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
-      return `https://embed.mappls.com/immersive/5ce166?placeDetails=true&castShadow=false&rotate=true&lat=${selectedEvent.latitude}&lng=${selectedEvent.longitude}`;
-    }
-    // Default location (Chennai) if no event is selected
-    return `https://embed.mappls.com/immersive/5ce166?placeDetails=true&castShadow=false&rotate=true&lat=13.0827&lng=80.2707`;
-  };
-  
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-white shadow-sm z-10">
@@ -156,12 +150,10 @@ const MapPage = () => {
               </div>
             </div>
           ) : (
-            <iframe 
-              src={getMapplsIframeUrl()} 
-              style={{ width: '100%', height: '100%' }} 
-              title="Mappls 3D Metaverse Maps" 
-              allowFullScreen
-            ></iframe>
+            <MapComponent 
+              selectedEvent={selectedEvent} 
+              onMarkerClick={handleEventClick}
+            />
           )}
         </div>
       </div>
