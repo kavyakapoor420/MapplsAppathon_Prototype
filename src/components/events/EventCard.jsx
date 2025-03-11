@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { CalendarIcon, MapPinIcon, UserGroupIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Link, useNavigate } from 'react-router-dom';
+import { CalendarIcon, MapPinIcon, UserGroupIcon, ClockIcon, GiftIcon } from '@heroicons/react/24/outline';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 
 const EventCard = ({ event }) => {
+  const navigate = useNavigate();
   const {
     id,
     title,
@@ -27,6 +28,34 @@ const EventCard = ({ event }) => {
     day: 'numeric',
   });
 
+  const getCategoryColor = (category) => {
+    const categoryMap = {
+      'Education': 'blue',
+      'Health': 'green',
+      'Environment': 'emerald',
+      'Community': 'purple',
+      'Arts': 'pink',
+      'Sports': 'orange',
+      'Technology': 'indigo',
+      'Food': 'yellow',
+      'Charity': 'red'
+    };
+    
+    return categoryMap[category] || 'primary';
+  };
+  
+  const handleDonateFood = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/food-donation', { 
+      state: { 
+        fromEvent: true, 
+        eventName: title,
+        eventLocation: location
+      } 
+    });
+  };
+
   return (
     <Card hover className="h-full flex flex-col hover-card transition-all duration-300">
       <div className="relative overflow-hidden">
@@ -36,7 +65,7 @@ const EventCard = ({ event }) => {
           className="w-full h-48 object-cover transition-transform duration-500 hover:scale-110"
         />
         <div className="absolute top-2 right-2">
-          <Badge variant={getCategoryVariant(category)}>{category}</Badge>
+          <Badge variant={getCategoryColor(category)}>{category}</Badge>
         </div>
       </div>
       
@@ -70,6 +99,20 @@ const EventCard = ({ event }) => {
           <Link to={`/events/${id}`}>
             <Button variant="primary" size="sm">View Details</Button>
           </Link>
+        </div>
+      </div>
+      
+      <div className="p-4 pt-0 mt-auto">
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDonateFood}
+            className="flex items-center"
+          >
+            <GiftIcon className="h-4 w-4 mr-1" />
+            Donate Food
+          </Button>
         </div>
       </div>
     </Card>

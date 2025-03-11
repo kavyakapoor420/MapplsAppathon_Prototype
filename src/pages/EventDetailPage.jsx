@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   CalendarIcon, 
   MapPinIcon, 
@@ -9,7 +9,9 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   ArrowLeftIcon,
-  ShareIcon
+  ShareIcon,
+  HeartIcon,
+  GiftIcon
 } from '@heroicons/react/24/outline';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -23,6 +25,7 @@ const EventDetailPage = () => {
   const [registered, setRegistered] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Simulate API call
@@ -175,6 +178,17 @@ const EventDetailPage = () => {
     };
     
     return categoryMap[category] || 'primary';
+  };
+  
+  // Add this function to handle food donation
+  const handleDonateFood = () => {
+    navigate('/food-donation', { 
+      state: { 
+        fromEvent: true, 
+        eventName: event?.title,
+        eventLocation: event?.location
+      } 
+    });
   };
   
   if (loading) {
@@ -356,13 +370,25 @@ const EventDetailPage = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    variant="primary" 
-                    fullWidth
-                    onClick={handleRegister}
-                  >
-                    Register Now
-                  </Button>
+                  <div className="flex flex-wrap gap-4 mt-8">
+                    <Button 
+                      variant="primary"
+                      onClick={handleRegister}
+                      disabled={loading || registered}
+                      className="flex items-center"
+                    >
+                      {registered ? 'Registered' : 'Register Now'}
+                    </Button>
+                    
+                    <Button 
+                      variant="secondary"
+                      onClick={handleDonateFood}
+                      className="flex items-center"
+                    >
+                      <GiftIcon className="h-5 w-5 mr-2" />
+                      Donate Food
+                    </Button>
+                  </div>
                 </>
               )}
             </div>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   CalendarIcon, 
   MapPinIcon, 
   UserGroupIcon, 
   TrophyIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  GiftIcon
 } from '@heroicons/react/24/outline';
 import EventCard from '../components/events/EventCard';
 import Button from '../components/ui/Button';
@@ -17,6 +18,7 @@ const HomePage = () => {
   const featuredEvents = mockEvents.slice(0, 3);
   const [mapLoaded, setMapLoaded] = useState(false);
   const { darkMode } = useTheme();
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Check if Leaflet is available
@@ -253,6 +255,50 @@ const HomePage = () => {
                 Browse Events
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Donate Food Section */}
+      <section className="py-16 bg-primary-50 dark:bg-primary-900 dark:bg-opacity-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:flex lg:items-center lg:justify-between">
+            <div className="lg:w-1/2 mb-8 lg:mb-0">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4 dark:text-white">
+                Donate Extra Food
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 dark:text-gray-300">
+                Help reduce food waste and feed those in need by donating your extra food to NGOs organizing food donation drives.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onClick={() => navigate('/food-donation')}
+                  className="flex items-center"
+                >
+                  <GiftIcon className="h-5 w-5 mr-2" />
+                  Donate Now
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => navigate('/events')}
+                  className="flex items-center"
+                >
+                  Learn More
+                </Button>
+              </div>
+            </div>
+            <div className="lg:w-1/2">
+              <div className="rounded-lg overflow-hidden shadow-xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1593113598332-cd59a0c3a9a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+                  alt="Food donation" 
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>

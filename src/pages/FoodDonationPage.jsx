@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { 
   HeartIcon, 
@@ -9,7 +9,8 @@ import {
   UserGroupIcon,
   ArrowRightIcon,
   ShoppingBagIcon,
-  MapIcon
+  MapIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -106,12 +107,38 @@ const FoodDonationPage = () => {
     pickupDate: '',
     pickupTime: '',
     description: '',
-    contactPhone: ''
+    contactPhone: '',
+    eventName: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [showDonationForm, setShowDonationForm] = useState(false);
   const { currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if coming from an event
+  useEffect(() => {
+    if (location.state?.fromEvent) {
+      // Pre-fill form with event information
+      setDonationForm(prev => ({
+        ...prev,
+        description: `Leftover food from event: ${location.state.eventName}`,
+        pickupAddress: location.state.eventLocation || '',
+        eventName: location.state.eventName || ''
+      }));
+      
+      // Show donation form directly
+      if (foodDrives.length > 0) {
+        setSelectedDrive(foodDrives[0]);
+        setShowDonationForm(true);
+        
+        // Scroll to form after a short delay
+        setTimeout(() => {
+          document.getElementById('donation-form')?.scrollIntoView({ behavior: 'smooth' });
+        }, 500);
+      }
+    }
+  }, [location.state, foodDrives]);
 
   // Update the map initialization useEffect
   useEffect(() => {
@@ -340,7 +367,8 @@ const FoodDonationPage = () => {
         pickupDate: '',
         pickupTime: '',
         description: '',
-        contactPhone: currentUser?.phone || ''
+        contactPhone: currentUser?.phone || '',
+        eventName: ''
       });
       setShowDonationForm(false);
     } catch (error) {
@@ -388,10 +416,27 @@ const FoodDonationPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {location.state?.fromEvent && (
+        <Button
+          variant="text"
+          onClick={() => navigate(-1)}
+          className="mb-4 flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+        >
+          <ArrowLeftIcon className="h-4 w-4 mr-1" />
+          Back to Event
+        </Button>
+      )}
+      
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 dark:text-white">Donate Extra Food</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 dark:text-white">
+          {location.state?.fromEvent 
+            ? `Donate Food from ${location.state.eventName}` 
+            : 'Donate Extra Food'}
+        </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto dark:text-gray-300">
-          Help reduce food waste and feed those in need by donating your extra food to NGOs organizing food donation drives.
+          {location.state?.fromEvent
+            ? 'Help reduce food waste by donating leftover food from your event to NGOs in need.'
+            : 'Help reduce food waste and feed those in need by donating your extra food to NGOs organizing food donation drives.'}
         </p>
       </div>
       
@@ -509,6 +554,14 @@ const FoodDonationPage = () => {
                 </div>
               </div>
             </div>
+            
+            {location.state?.fromEvent && (
+              <div className="bg-primary-50 p-4 rounded-lg mb-6 dark:bg-primary-900 dark:bg-opacity-20">
+                <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                  You're donating leftover food from the event: <span className="font-bold">{location.state.eventName}</span>
+                </p>
+              </div>
+            )}
             
             <form onSubmit={handleDonationSubmit}>
               <div className="bg-white p-6 rounded-lg shadow-md dark:bg-dark-100">
