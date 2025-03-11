@@ -20,7 +20,7 @@ import ThemeToggle from './components/ui/ThemeToggle';
 
 import TrafficCongestion from './pages/TrafficRouteManagement';
 import ImpactTrackingScreen from './Impact';
-// import Chatbot from './components/Chatbot';
+import Chatbot from './components/Chatbot';
 
 function App() {
   useEffect(() => {
@@ -36,7 +36,6 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        {/* <Chatbot/> */}
         <Router>
           <Toaster 
             position="top-right" 
@@ -46,6 +45,7 @@ function App() {
             }}
           />
           <ThemeToggle />
+          <Chatbot />
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
