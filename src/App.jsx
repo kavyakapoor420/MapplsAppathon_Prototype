@@ -13,6 +13,7 @@ import ThemeToggle from './components/ui/ThemeToggle';
 
 import TrafficCongestion from './pages/TrafficRouteManagement';
 import ImpactTrackingScreen from './Impact';
+import Chatbot from './components/Chatbot';
 
 function App() {
   useEffect(() => {
@@ -27,6 +28,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      <Chatbot/>
       <Router>
         <Toaster 
           position="top-right" 
