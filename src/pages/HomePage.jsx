@@ -442,23 +442,23 @@ const HomePage = () => {
             {[
               {
                 quote: "Participating in these events has been life-changing. I've met amazing people and made a real difference in my community.",
-                author: "Sarah Johnson",
+                author: "Suraj Chauhan",
                 role: "Volunteer",
-                avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+                avatar: "",
                 rating: 5
               },
               {
                 quote: "The platform makes it incredibly easy to find meaningful volunteer opportunities. I've been able to contribute to causes I care about.",
-                author: "Michael Chen",
+                author: "Lakshay Gupta",
                 role: "Regular Participant",
-                avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+                avatar: "",
                 rating: 5
               },
               {
                 quote: "As an NGO organizer, this platform has helped us reach more volunteers and make our events more successful than ever before.",
-                author: "Priya Sharma",
+                author: "Kavya",
                 role: "NGO Director",
-                avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+                avatar: "",
                 rating: 5
               }
             ].map((testimonial, index) => (
@@ -483,13 +483,15 @@ const HomePage = () => {
                   <p className="text-gray-700 dark:text-gray-300 italic mb-6">"{testimonial.quote}"</p>
                   
                   <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-primary-200 dark:border-primary-800">
-                      <img 
-                        src={testimonial.avatar} 
-                        alt={testimonial.author}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    {testimonial.avatar ? (
+                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-primary-200 dark:border-primary-800">
+                        <img 
+                          src={testimonial.avatar} 
+                          alt={testimonial.author}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : null}
                     <div>
                       <h4 className="font-semibold text-gray-900 dark:text-white">{testimonial.author}</h4>
                       <p className="text-sm text-primary-600 dark:text-primary-400">{testimonial.role}</p>
